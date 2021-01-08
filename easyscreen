@@ -1,0 +1,162 @@
+#!/usr/bin/env sh
+#Created by TANMOYKHANS@GMAIL.COM.
+
+filename=$(basename $0)
+
+easyscreen_list() {
+	screen -ls
+}
+
+
+easyscreen_current(){
+        if [ -z $STY ]
+        then
+                echo "Not inside any screen session"
+		echo ""
+        else
+                echo "Currently inside screen session " $STY
+		echo ""
+        fi
+}
+
+
+
+easyscreen_help() {
+
+
+echo "
+
+help :
+$filename list 			-> Shows running screens
+$filename current                      -> Shows current screen name
+
+$filename new <name>			-> Create a screen with title <name> and attach to it
+$filename reattach <name>		-> Reattach forcefully to a previously created screen session
+$filename rename <old_name> <new_name>	-> Rename a screen session
+
+$filename kill <name>			-> Kill a screen session from inside or outside the session
+$filename kill_self			-> Kill current screen session from inside the session
+
+"
+
+easyscreen_list
+easyscreen_current
+
+}
+
+
+
+easyscreen_new(){
+   echo trying to create $1
+   screen -S $1
+}
+
+easyscreen_kill() {
+   screen -X -S $1 "kill"
+}
+
+easyscreen_reattach() {
+   screen -r -d $1
+}
+
+easyscreen_rename(){
+	screen -S $1 -X sessionname $2
+}
+
+
+if [ -z "$1" ]
+	then
+		easyscreen_help
+	    	exit
+fi
+
+if [ $1 == list ]
+	then
+		easyscreen_list
+		exit
+fi
+
+
+if [ $1 == current ]
+then
+        easyscreen_current
+        exit
+fi
+
+
+
+
+if [ $1 == new ]
+        then
+		if [ -z "$2" ]
+			then
+				echo "Screen could not be created as no name was provided"
+				easyscreen_help
+				exit
+		fi
+                easyscreen_new $USER.$2
+		exit
+fi
+
+
+
+if [ $1 == reattach ]
+        then
+                if [ -z "$2" ]
+                        then
+                                echo "No screen name provided to reattach"
+                                easyscreen_help
+                                exit
+                fi
+                easyscreen_reattach $2
+                exit
+fi
+
+
+
+
+
+if [ $1 == kill ]
+        then
+                if [ -z "$2" ]
+                        then
+                                echo "No screen name provided to kill"
+                                easyscreen_help
+                                exit
+                fi
+                easyscreen_kill $2
+                exit
+fi
+
+
+
+if [ $1 == kill_self ]
+then
+	if [ -z $STY ]
+	then
+		echo "Not inside a screen session"
+	else
+		easyscreen_kill $STY
+	fi
+	exit
+fi
+
+
+
+if [ $1 == rename ]
+then
+	if [ "$#" -ne 3 ]
+	then
+		echo "Incorrect use of rename"
+		easyscreen_help
+	else
+		easyscreen_rename $2 $USER.$3
+	exit
+	fi
+fi
+	
+		
+
+echo "Unknown command"
+
+
